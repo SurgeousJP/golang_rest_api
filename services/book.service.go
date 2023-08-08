@@ -7,5 +7,5 @@ type BookService interface {
 	GetBook(*string) (*models.Book, error)
 	GetAllBooks() ([]*models.Book, error)
 	UpdateBook(*models.Book) error
-	DeleteBook(*models.Book) error
+	DeleteBook(*string) error
 }
