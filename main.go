@@ -8,7 +8,7 @@ import (
 	"log"
 
 	"os"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -31,10 +31,10 @@ func init(){
 	ctx = context.TODO()
 
 	// Load environment variables from the .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 
 	// Retrieve the connection string from the environment
 	connectionString := os.Getenv("DB_CONNECTION_STRING")
@@ -43,7 +43,7 @@ func init(){
 	Client().
 	ApplyURI(connectionString)
 
-	mongoClient, err = mongo.Connect(ctx, mongoConn)
+	mongoClient, err := mongo.Connect(ctx, mongoConn)
 	if err != nil {
 		log.Fatal(err)
 	}
