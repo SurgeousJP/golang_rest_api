@@ -57,6 +57,7 @@ func init(){
 	bookService = services.NewBookService(bookCollection, ctx)
 	bookController = controllers.New(bookService)
 	server = gin.Default()
+	server.SetTrustedProxies(nil)
 }
 
 func main() {
