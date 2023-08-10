@@ -33,12 +33,16 @@ The API provides the following endpoints to manage a resource (e.g., "books"):
 
 **Insert an item (book) (put the book in the body request)**
 POST("/create", bc.CreateBook)
+
 **Get an item (book) (given its name)**
 GET("/get/:name", bc.GetBook)
+
 **Get all books in DB**
 GET("/getall", bc.GetAllBooks)
+
 **Update an item (book) (put the book in the body request)**
 PATCH("/update", bc.UpdateBook)
+
 **Delete an item (book) (given its name)**
 DELETE("/delete/:name", bc.DeleteBook)
 
