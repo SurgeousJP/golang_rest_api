@@ -23,14 +23,16 @@ var (
 	ctx context.Context
 	bookCollection *mongo.Collection
 	mongoClient *mongo.Client
-	serverGroup string
-	port string
 )
 
 func init(){
 	ctx = context.TODO()
 
-	// Load environment variables from the .env file
+	
+	// You should load the DB_CONNECTION_STRING, SERVER_GROUP, PORT from your .env environment,
+	// set it to fit your usage, you can check it from previous commits for more information
+
+	// Load environment variables from the .env file (in local)
 	// err := godotenv.Load()
 	// if err != nil {
 	// 	log.Fatal("Error loading .env file")
@@ -62,9 +64,15 @@ func init(){
 
 func main() {
 	defer mongoClient.Disconnect(ctx)
+
 	serverGroup := os.Getenv("SERVER_GROUP")
 	port := os.Getenv("PORT")
+	if port == "" {
+		port = "9090"
+	}
+
 	basePath := server.Group(serverGroup)
+
 	bookController.RegisterBookRoutes(basePath)
 	log.Fatal(server.Run(":" + port))
 }
