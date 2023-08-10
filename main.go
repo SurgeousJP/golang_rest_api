@@ -7,6 +7,9 @@ import (
 	"golang_rest_api/services"
 	"log"
 
+	"os"
+	"github.com/joho/godotenv"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -20,15 +23,25 @@ var (
 	ctx context.Context
 	bookCollection *mongo.Collection
 	mongoClient *mongo.Client
-	err error
+	serverGroup string
+	port string
 )
 
 func init(){
 	ctx = context.TODO()
 
-	mongoConn := options.
+	// Load environment variables from the .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// Retrieve the connection string from the environment
+	connectionString := os.Getenv("DB_CONNECTION_STRING")
+
+	mongoConn := options.	
 	Client().
-	ApplyURI("mongodb+srv://baosurgeous:testDatabase@testcluster.dfxfjru.mongodb.net/?retryWrites=true&w=majority")
+	ApplyURI(connectionString)
 
 	mongoClient, err = mongo.Connect(ctx, mongoConn)
 	if err != nil {
@@ -48,7 +61,9 @@ func init(){
 
 func main() {
 	defer mongoClient.Disconnect(ctx)
-	basePath := server.Group("/v1")
+	serverGroup := os.Getenv("SERVER_GROUP")
+	port := os.Getenv("PORT")
+	basePath := server.Group(serverGroup)
 	bookController.RegisterBookRoutes(basePath)
-	log.Fatal(server.Run(":9090"))
+	log.Fatal(server.Run(":" + port))
 }
