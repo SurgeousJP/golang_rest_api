@@ -7,6 +7,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type BookServiceImpl struct {
@@ -26,12 +27,54 @@ func (b *BookServiceImpl) CreateBook(book *models.Book) error {
 	return err
 }
 
+func (b *BookServiceImpl) CreateBooks(books []*models.Book) error {
+	var documents []interface{}
+	for _, book := range books {
+		documents = append(documents, book)
+	}
+
+	_, err := b.bookCollection.InsertMany(b.contxt, documents)
+	return err
+}
+
 func (b *BookServiceImpl) GetBook(bookName *string) (*models.Book, error) {
 	var book *models.Book
 	query := bson.D{bson.E{Key: "name", Value: bookName}}
 	err := b.bookCollection.FindOne(b.contxt, query).Decode(&book)
 	return book, err
 }
+
+func (b *BookServiceImpl) GetBooksInPage(pageNumber, bookPerPage int64) ([]*models.Book, error){
+	var booksInPage []*models.Book
+
+	options := options.Find().
+		SetSkip(((pageNumber) - 1) * (bookPerPage)).
+		SetLimit(bookPerPage)
+
+	cursor, err := b.bookCollection.Find(b.contxt, bson.D{{}}, options)
+
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(b.contxt) {
+		var book models.Book
+		err := cursor.Decode(&book)
+		if err != nil {
+			return nil, err
+		}
+		booksInPage = append(booksInPage, &book)
+	}
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+	cursor.Close(b.contxt)
+
+	if len(booksInPage) == 0 {
+		return nil, errors.New("documents not found")
+	}
+
+	return booksInPage, nil
+} 
 
 func (b *BookServiceImpl) GetAllBooks() ([]*models.Book, error) {
 	var books []*models.Book
