@@ -6,10 +6,9 @@ import (
 	"golang_rest_api/controllers"
 	"golang_rest_api/services"
 	"log"
-
 	"os"
-	// "github.com/joho/godotenv"
-
+	"github.com/joho/godotenv"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -33,10 +32,10 @@ func init(){
 	// set it to fit your usage, you can check it from previous commits for more information
 
 	// Load environment variables from the .env file (in local)
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	log.Fatal("Error loading .env file")
-	// }
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	// Retrieve the connection string from the environment
 	connectionString := os.Getenv("DB_CONNECTION_STRING")
@@ -59,6 +58,8 @@ func init(){
 	bookService = services.NewBookService(bookCollection, ctx)
 	bookController = controllers.New(bookService)
 	server = gin.Default()
+	// Set up CORS (Cross-Origin Resource Sharing)
+    server.Use(cors.Default())
 	server.SetTrustedProxies(nil)
 }
 
