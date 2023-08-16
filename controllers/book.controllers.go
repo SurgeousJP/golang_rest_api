@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"golang_rest_api/cache"
 	"golang_rest_api/constants"
 	"golang_rest_api/models"
@@ -55,16 +56,18 @@ func (bc *BookController) CreateBooks(ctx *gin.Context) {
 func (bc *BookController) GetBook(ctx *gin.Context) {
 	bookName := ctx.Param("name")
 
-	book, _ := bc.BookCache.Get(&bookName)
+	book, _ := bc.BookCache.GetBook(&bookName)
 
 	if book == nil {
 		book, err := bc.BookService.GetBook(&bookName)
-		ctx.JSON(http.StatusOK, book)
+
 		if err != nil {
 			ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 			return
 		}
-		bc.BookCache.Set(&bookName, book)
+		ctx.JSON(http.StatusOK, book)
+
+		bc.BookCache.SetBook(&bookName, book)
 		return
 	}
 	ctx.JSON(http.StatusOK, book)
@@ -81,22 +84,44 @@ func (bc *BookController) GetBooksInPage(ctx *gin.Context) {
 
 	booksPerPage := constants.BOOKS_PER_PAGE
 
-	books, err := bc.BookService.GetBooksInPage(int64(pageNumberInt), booksPerPage)
+	key := "all_books_page_" + fmt.Sprint(pageNumber)
+	books, _ := bc.BookCache.GetAllBooks(&key)
 
-	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+	if books == nil {
+		books, err := bc.BookService.GetBooksInPage(int64(pageNumberInt), booksPerPage)
+
+		if err != nil {
+			ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusOK, books)
+
+		bc.BookCache.SetAllBooks(&key, books)
 		return
 	}
 	ctx.JSON(http.StatusOK, books)
 }
 
 func (bc *BookController) GetAllBooks(ctx *gin.Context) {
-	books, err := bc.BookService.GetAllBooks()
+	// Try to get all books from the Redis cache
+	key := "all_books"
+	books, _ := bc.BookCache.GetAllBooks(&key)
 
-	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+	if books == nil {
+		// Cache miss, fetch all books from the primary source
+		books, err := bc.BookService.GetAllBooks()
+
+		if err != nil {
+			ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusOK, books)
+
+		// Cache the fetched books in Redis
+		bc.BookCache.SetAllBooks(&key, books)
 		return
 	}
+
 	ctx.JSON(http.StatusOK, books)
 }
 

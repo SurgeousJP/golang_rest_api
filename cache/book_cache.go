@@ -5,6 +5,8 @@ import (
 )
 
 type BookCache interface {
-	Set(key *string, value *models.Book) error
-	Get(key *string) (*models.Book, error)
+	SetBook(key *string, book *models.Book) error
+	GetBook(key *string) (*models.Book, error)
+	GetAllBooks(key *string) ([]*models.Book, error)
+	SetAllBooks(key *string, books []*models.Book) error
 }
