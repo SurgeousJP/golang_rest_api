@@ -11,18 +11,18 @@ import (
 
 type RedisCache struct {
 	redisClient *redis.Client
-	expire      time.Duration
+	expireTimeInSeconds      int
 	ctx         context.Context
 }
 
-func NewRedisCache(host string, db int, exp time.Duration, password string, ctx context.Context) BookCache {
+func NewRedisCache(host string, db int, exp int, password string, ctx context.Context) BookCache {
 	return &RedisCache{
 		redisClient: redis.NewClient(&redis.Options{
 			Addr:     host,
 			Password: password,
 			DB:       db,
 		}),
-		expire: exp,
+		expireTimeInSeconds: exp,
 		ctx:    ctx,
 	}
 }
@@ -32,7 +32,12 @@ func (cache *RedisCache) Set(key *string, value *models.Book) error {
 	if err != nil {
 		return err
 	}
-	cache.redisClient.Set(cache.ctx, *key, json, cache.expire*time.Second)
+	cache.redisClient.Set(
+		cache.ctx, 
+		*key, 
+		json, 
+		time.Duration(cache.expireTimeInSeconds) * time.Second,
+	)
 	return nil
 }
 

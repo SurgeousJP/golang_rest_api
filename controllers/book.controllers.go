@@ -59,12 +59,13 @@ func (bc *BookController) GetBook(ctx *gin.Context) {
 
 	if book == nil {
 		book, err := bc.BookService.GetBook(&bookName)
+		ctx.JSON(http.StatusOK, book)
 		if err != nil {
 			ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 			return
 		}
 		bc.BookCache.Set(&bookName, book)
-		ctx.JSON(http.StatusOK, book)
+		return
 	}
 	ctx.JSON(http.StatusOK, book)
 }

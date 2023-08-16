@@ -2,13 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"golang_rest_api/cache"
 	"golang_rest_api/controllers"
 	"golang_rest_api/services"
 	"log"
 	"os"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -26,6 +24,12 @@ var (
 	ctx            context.Context
 	bookCollection *mongo.Collection
 	mongoClient    *mongo.Client
+)
+
+const (
+	NUMBER_OF_SECONDS_IN_ONE_DAY = 86400
+	DEFAULT_DATABASE_CODE        = 0
+	DEFAULT_PORT                 = "9090"
 )
 
 func init() {
@@ -55,19 +59,18 @@ func init() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("mongodb connection established")
-
-	bookCollection = mongoClient.Database("TestDB").Collection("books")
+	bookCollection = mongoClient.Database(os.Getenv("DB_NAME")).Collection("books")
 	bookService = services.NewBookService(bookCollection, ctx)
 	bookRedisCache = cache.NewRedisCache(
-		"redis-18440.c295.ap-southeast-1-1.ec2.cloud.redislabs.com:18440",
-		0,
-		time.Duration(604800*time.Second),
+		os.Getenv("REDIS_ADDRESS"),
+		DEFAULT_DATABASE_CODE,
+		NUMBER_OF_SECONDS_IN_ONE_DAY,
 		os.Getenv("REDIS_PASSWORD"),
 		ctx,
 	)
 
 	bookController = controllers.New(bookService, bookRedisCache)
+
 	server = gin.Default()
 	// Set up CORS (Cross-Origin Resource Sharing)
 	server.Use(cors.Default())
@@ -78,9 +81,10 @@ func main() {
 	defer mongoClient.Disconnect(ctx)
 
 	serverGroup := os.Getenv("SERVER_GROUP")
+	
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "9090"
+		port = DEFAULT_PORT
 	}
 
 	basePath := server.Group(serverGroup)
