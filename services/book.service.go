@@ -7,7 +7,7 @@ type BookService interface {
 	CreateBooks([]*models.Book) error
 	GetBook(*string) (*models.Book, error)
 	GetAllBooks() ([]*models.Book, error)
-	GetBooksInPage(int64, int64) ([]*models.Book, error) 
+	GetBooksInPage(int64, int64) ([]*models.Book, error)
 	UpdateBook(*models.Book) error
 	DeleteBook(*string) error
 }
