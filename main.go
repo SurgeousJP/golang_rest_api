@@ -19,8 +19,10 @@ import (
 var (
 	server         *gin.Engine
 	bookService    services.BookService
+	userService    services.UserService
 	bookRedisCache cache.BookCache
 	bookController controllers.BookController
+	userController controllers.UserController
 	ctx            context.Context
 	bookCollection *mongo.Collection
 	mongoClient    *mongo.Client
@@ -69,8 +71,8 @@ func init() {
 		ctx,
 	)
 
-	bookController = controllers.New(bookService, bookRedisCache)
-
+	bookController = controllers.NewBookController(bookService, bookRedisCache)
+	userController = controllers.NewUserController(userService)
 	server = gin.Default()
 	// Set up CORS (Cross-Origin Resource Sharing)
 	server.Use(cors.Default())
@@ -81,7 +83,7 @@ func main() {
 	defer mongoClient.Disconnect(ctx)
 
 	serverGroup := os.Getenv("SERVER_GROUP")
-	
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = DEFAULT_PORT
@@ -90,5 +92,6 @@ func main() {
 	basePath := server.Group(serverGroup)
 
 	bookController.RegisterBookRoutes(basePath)
+	userController.RegisterUserRoutes(basePath)
 	log.Fatal(server.Run(":" + port))
 }

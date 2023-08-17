@@ -17,7 +17,7 @@ type BookController struct {
 	BookCache   cache.BookCache
 }
 
-func New(bookService services.BookService, bookCache cache.BookCache) BookController {
+func NewBookController(bookService services.BookService, bookCache cache.BookCache) BookController {
 	return BookController{
 		BookService: bookService,
 		BookCache:   bookCache,
