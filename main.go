@@ -25,6 +25,7 @@ var (
 	userController controllers.UserController
 	ctx            context.Context
 	bookCollection *mongo.Collection
+	userCollection *mongo.Collection
 	mongoClient    *mongo.Client
 )
 
@@ -63,6 +64,8 @@ func init() {
 
 	bookCollection = mongoClient.Database(os.Getenv("DB_NAME")).Collection("books")
 	bookService = services.NewBookService(bookCollection, ctx)
+	userCollection = mongoClient.Database(os.Getenv("DB_NAME")).Collection("users")
+	userService = services.NewUserservice(userCollection, ctx)
 	bookRedisCache = cache.NewRedisCache(
 		os.Getenv("REDIS_ADDRESS"),
 		DEFAULT_DATABASE_CODE,

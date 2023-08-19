@@ -33,6 +33,7 @@ func (bc *BookController) CreateBook(ctx *gin.Context) {
 
 	if err := bc.BookService.CreateBook(&book); err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Successful"})
@@ -48,6 +49,7 @@ func (bc *BookController) CreateBooks(ctx *gin.Context) {
 
 	if err := bc.BookService.CreateBooks(books); err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Successful"})
